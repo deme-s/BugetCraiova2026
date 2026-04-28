@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bugetul Municipiului Craiova 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f4f0e8;
+    --card: #ffffff;
+    --border: #e5dfd3;
+    --text: #1a1714;
+    --text-muted: #6b6560;
+    --accent: #c0392b;
+    --shadow: 0 1px 3px rgba(0,0,0,.07), 0 2px 8px rgba(0,0,0,.04);
+
+    --c1: #2c7bb6;  /* autorități */
+    --c2: #4a9e5c;  /* învățământ */
+    --c3: #d95f02;  /* transporturi */
+    --c4: #7b4fa0;  /* cultură */
+    --c5: #e83e3e;  /* sănătate */
+    --c6: #e07b39;  /* combustibili */
+    --c7: #b5a424;  /* ordine publică */
+    --c8: #1a9e9e;  /* locuințe */
+    --c9: #cf446a;  /* asistență socială */
+    --c10: #3c8e5e; /* protecția mediului */
+    --c11: #8c6d3f; /* datorie */
+    --c12: #6a6a8a; /* acțiuni economice */
+    --c13: #a0a0a0; /* alte */
+  }
+
+  body {
+    font-family: 'Sora', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  header {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 4px;
+  }
+
+  h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -.3px;
+  }
+
+  .header-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  nav {
+    display: flex;
+    gap: 2px;
+    margin-top: 12px;
+  }
+
+  .tab {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .15s;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* KPI cards */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -.5px;
+    line-height: 1.1;
+  }
+
+  .kpi-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .kpi.blue .kpi-value { color: #2c7bb6; }
+  .kpi.green .kpi-value { color: #4a9e5c; }
+  .kpi.red .kpi-value { color: #c0392b; }
+  .kpi.orange .kpi-value { color: #d95f02; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 22px 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: 18px;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Bar chart custom */
+  .bar-chart-wrap {
+    overflow: hidden;
+  }
+
+  .bar-row {
+    display: grid;
+    grid-template-columns: 220px 1fr 80px;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 0;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background .12s;
+  }
+
+  .bar-row:hover { background: #f9f6f0; }
+  .bar-row.selected { background: #f0ebe0; }
+
+  .bar-label {
+    font-size: 12px;
+    color: var(--text);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bar-track {
+    height: 22px;
+    background: #f0ece4;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+  }
+
+  .bar-fill-func {
+    height: 100%;
+    border-radius: 4px 0 0 4px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+  }
+
+  .bar-fill-dev {
+    height: 100%;
+    opacity: .45;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+  }
+
+  .bar-val {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  /* Drill-down panel */
+  .drill-panel {
+    background: #faf7f2;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-top: 8px;
+    animation: slideDown .2s ease;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .drill-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .drill-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  .drill-row {
+    display: grid;
+    grid-template-columns: 1fr 90px 100px;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 0;
+    border-bottom: 1px solid #ede8e0;
+  }
+
+  .drill-row:last-child { border-bottom: none; }
+
+  .drill-name { font-size: 12px; }
+
+  .drill-bar-wrap {
+    height: 10px;
+    background: #ede8e0;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .drill-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width .3s;
+  }
+
+  .drill-amount {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-muted);
+    text-align: right;
+  }
+
+  .close-btn {
+    float: right;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--text-muted);
+    line-height: 1;
+  }
+
+  /* Donut chart */
+  .donut-wrap {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .donut-canvas-wrap {
+    flex-shrink: 0;
+    width: 180px;
+    height: 180px;
+  }
+
+  .donut-legend { flex: 1; }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 0;
+    font-size: 12px;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .legend-name { flex: 1; }
+
+  .legend-pct {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* Tip types */
+  .type-row {
+    display: grid;
+    grid-template-columns: 180px 1fr 90px;
+    align-items: center;
+    gap: 12px;
+    padding: 7px 0;
+    border-bottom: 1px solid #f0ece4;
+  }
+
+  .type-row:last-child { border-bottom: none; }
+
+  .type-label { font-size: 12px; }
+
+  .type-bar-wrap {
+    height: 14px;
+    background: #f0ece4;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .type-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+  }
+
+  .type-val {
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    text-align: right;
+    color: var(--text-muted);
+  }
+
+  /* Investments */
+  .inv-chapter-row {
+    display: grid;
+    grid-template-columns: 240px 1fr 90px;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background .12s;
+  }
+
+  .inv-chapter-row:hover { background: #f9f6f0; }
+  .inv-chapter-row.selected { background: #f0ebe0; }
+
+  /* Surse */
+  .surse-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .sursa-card {
+    background: #f9f6f0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+
+  .sursa-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .sursa-val {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -.3px;
+  }
+
+  .sursa-pct {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* Legend bar */
+  .legend-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+
+  .legend-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .legend-bar-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 20px;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  @media (max-width: 700px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .bar-row { grid-template-columns: 140px 1fr 70px; }
+    header { padding: 14px 16px 0; }
+    main { padding: 16px 12px 40px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>Bugetul Municipiului Craiova 2026</h1>
+  </div>
+  <p class="header-sub">Proiect de buget · Sursă oficială: Primăria Municipiului Craiova</p>
+  <nav>
+    <button class="tab active" onclick="showTab('prezentare', this)">Prezentare</button>
+    <button class="tab" onclick="showTab('functii', this)">Pe funcții</button>
+    <button class="tab" onclick="showTab('tipuri', this)">Pe tipuri</button>
+    <button class="tab" onclick="showTab('investitii', this)">Investiții</button>
+    <button class="tab" onclick="showTab('surse', this)">Surse</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ======= PREZENTARE ======= -->
+<section id="prezentare" class="section active">
+
+  <div class="kpi-grid">
+    <div class="kpi blue">
+      <div class="kpi-label">Cheltuieli totale</div>
+      <div class="kpi-value">1,47 mld lei</div>
+      <div class="kpi-sub">buget general 2026</div>
+    </div>
+    <div class="kpi orange">
+      <div class="kpi-label">Investiții proprii</div>
+      <div class="kpi-value">193,8 mil lei</div>
+      <div class="kpi-sub">13,2% din total cheltuieli</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Cheltuieli personal</div>
+      <div class="kpi-value">146,6 mil lei</div>
+      <div class="kpi-sub">10,0% din total cheltuieli</div>
+    </div>
+    <div class="kpi red">
+      <div class="kpi-label">Deficit</div>
+      <div class="kpi-value">−19,2 mil lei</div>
+      <div class="kpi-sub">venituri: 1,45 mld lei</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cheltuieli pe funcții — mii lei</div>
+    <div class="legend-bar">
+      <div class="legend-bar-item"><div class="legend-bar-dot" style="background:#888"></div> Funcționare</div>
+      <div class="legend-bar-item"><div class="legend-bar-dot" style="background:#bbb;opacity:.6"></div> Dezvoltare</div>
+    </div>
+    <div class="bar-chart-wrap" id="prezentare-bars"></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Pe funcții (clasificare funcțională)</div>
+      <div class="donut-wrap">
+        <div class="donut-canvas-wrap"><canvas id="donut-functii"></canvas></div>
+        <div class="donut-legend" id="legend-functii"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Surse de finanțare</div>
+      <div class="donut-wrap">
+        <div class="donut-canvas-wrap"><canvas id="donut-surse"></canvas></div>
+        <div class="donut-legend" id="legend-surse"></div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ======= PE FUNCȚII ======= -->
+<section id="functii" class="section">
+  <div class="card">
+    <div class="card-title">Cheltuieli pe clasificare funcțională — mii lei · click pentru detalii</div>
+    <div class="legend-bar">
+      <div class="legend-bar-item"><div class="legend-bar-dot" style="background:#888"></div> Funcționare</div>
+      <div class="legend-bar-item"><div class="legend-bar-dot" style="background:#bbb;opacity:.6"></div> Dezvoltare</div>
+    </div>
+    <div id="functii-bars"></div>
+  </div>
+</section>
+
+<!-- ======= PE TIPURI ======= -->
+<section id="tipuri" class="section">
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Structura cheltuielilor</div>
+      <div class="donut-wrap" style="flex-direction:column; align-items:flex-start; gap:16px;">
+        <div style="width:200px;height:200px;margin:0 auto;"><canvas id="donut-tipuri"></canvas></div>
+      <div id="legend-tipuri" style="margin-top:12px;"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Detalii pe tipuri economice — mii lei</div>
+      <div id="tipuri-bars"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= INVESTIȚII ======= -->
+<section id="investitii" class="section">
+  <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi blue">
+      <div class="kpi-label">Total investiții proprii</div>
+      <div class="kpi-value">193,8 mil lei</div>
+      <div class="kpi-sub">cheltuieli de capital</div>
+    </div>
+    <div class="kpi orange">
+      <div class="kpi-label">PNRR + FEN</div>
+      <div class="kpi-value">394,6 mil lei</div>
+      <div class="kpi-sub">proiecte cu finanțare externă</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Total dezvoltare</div>
+      <div class="kpi-value">622,8 mil lei</div>
+      <div class="kpi-sub">secțiunea de dezvoltare</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Investiții proprii pe capitole — mii lei · click pentru proiecte</div>
+    <div id="inv-bars"></div>
+  </div>
+</section>
+
+<!-- ======= SURSE ======= -->
+<section id="surse" class="section">
+  <div class="surse-grid">
+    <div class="sursa-card">
+      <div class="sursa-label">Venituri proprii (impozite+taxe)</div>
+      <div class="sursa-val" style="color:#2c7bb6">380,9 mil. lei</div>
+      <div class="sursa-pct">26,3% din venituri totale</div>
+    </div>
+    <div class="sursa-card">
+      <div class="sursa-label">Transferuri buget central (cote IMP+TVA)</div>
+      <div class="sursa-val" style="color:#4a9e5c">663,2 mil. lei</div>
+      <div class="sursa-pct">45,7% din venituri totale</div>
+    </div>
+    <div class="sursa-card">
+      <div class="sursa-label">Fonduri europene (PNRR+FEN+UE)</div>
+      <div class="sursa-val" style="color:#7b4fa0">375,9 mil. lei</div>
+      <div class="sursa-pct">25,9% din venituri totale</div>
+    </div>
+    <div class="sursa-card">
+      <div class="sursa-label">Subvenții de la bugetul de stat</div>
+      <div class="sursa-val" style="color:#d95f02">28,3 mil. lei</div>
+      <div class="sursa-pct">2,0% din venituri totale</div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Structura veniturilor</div>
+      <div style="max-width:240px;margin:0 auto 16px;"><canvas id="donut-surse-detail"></canvas></div>
+      <div id="legend-surse-detail" style="font-size:11px;"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Detaliu surse finanțare — mii lei</div>
+      <div id="surse-bars"></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>Date din proiectul de buget Primăria Municipiului Craiova 2026 · primariacraiova.ro</footer>
+
+<script>
+// ===================== DATA =====================
+const CAPITOLE = [
+  { cod:'65.02', nume:'Învățământ',                              total:296567, func:112405, dezv:184162, color:'#4a9e5c',
+    detalii:[
+      { nume:'Unități de învățământ (scoli, grădinițe, licee)', val:293999 },
+      { nume:'Creșa Craiova (cofinanțare)', val:2568 },
+    ]
+  },
+  { cod:'67.02', nume:'Cultură, recreere și religie',            total:178053, func:142220, dezv:35833,  color:'#7b4fa0',
+    detalii:[
+      { nume:'Primăria Craiova (grădini publice, baze sportive)', val:126605 },
+      { nume:'Sport Club Municipal Craiova', val:21435 },
+      { nume:'Opera Română Craiova', val:11100 },
+      { nume:'Filarmonica Oltenia Craiova', val:10426 },
+      { nume:'Teatrul pentru copii și tineret Colibri', val:8487 },
+    ]
+  },
+  { cod:'74.02', nume:'Protecția mediului',                      total:168746, func:107972, dezv:60774,  color:'#3c8e5e',
+    detalii:[
+      { nume:'Salubritate', val:98849 },
+      { nume:'Canalizare și tratarea apelor reziduale', val:59673 },
+      { nume:'Reducerea și controlul poluării', val:470 },
+      { nume:'Colectarea și tratarea deșeurilor', val:8075 },
+      { nume:'Alte servicii protecția mediului', val:1679 },
+    ]
+  },
+  { cod:'70.02', nume:'Locuințe, servicii și dezv. publică',     total:160958, func:42877, dezv:118081,  color:'#1a9e9e',
+    detalii:[
+      { nume:'Locuințe (programe ANL, PNRR)', val:80060 },
+      { nume:'Iluminat public și electrificări rurale', val:20115 },
+      { nume:'Alte servicii în domenii comunal', val:60583 },
+      { nume:'Alimentări cu apă și amenajări', val:200 },
+    ]
+  },
+  { cod:'84.02', nume:'Transporturi',                             total:155132, func:86800, dezv:68332,  color:'#d95f02',
+    detalii:[
+      { nume:'Reparații și întreținere străzi', val:68300 },
+      { nume:'Subvenții transport public (diferențe preț)', val:18500 },
+      { nume:'Modernizare și reabilitare rețea stradală (FEN/PNRR)', val:52418 },
+      { nume:'Alte (PNRR trafic)', val:2 },
+      { nume:'Plăți recuperate ani precedenți', val:-4088 },
+    ]
+  },
+  { cod:'68.02', nume:'Asigurări și asistență socială',           total:147660, func:132393, dezv:15267,  color:'#cf446a',
+    detalii:[
+      { nume:'DGAS Craiova', val:107432 },
+      { nume:'Transport gratuit (drepturi sociale)', val:23000 },
+      { nume:'Căminul pentru Persoane Vârstnice', val:17228 },
+    ]
+  },
+  { cod:'51.02', nume:'Autorități publice și acțiuni externe',   total:143063, func:109908, dezv:33155,  color:'#2c7bb6',
+    detalii:[
+      { nume:'Funcționare aparat propriu PMC', val:109908 },
+      { nume:'Cheltuieli de capital (IT, clădiri, echipamente)', val:33155 },
+    ]
+  },
+  { cod:'81.02', nume:'Combustibili și energie',                 total:116362, func:24055, dezv:92307,  color:'#e07b39',
+    detalii:[
+      { nume:'Instalație stocare energie electrică (fotovoltaic PMC)', val:35000 },
+      { nume:'Proiecte FEN energie regenerabilă', val:55233 },
+      { nume:'Subvenții acoperire diferențe preț (RADET/Termo Urban)', val:28000 },
+      { nume:'Modernizare rețele termice și puncte termice', val:1200 },
+      { nume:'Plăți recuperate ani precedenți', val:-3945 },
+    ]
+  },
+  { cod:'66.02', nume:'Sănătate',                                 total:52676, func:40763, dezv:11913,   color:'#e83e3e',
+    detalii:[
+      { nume:'Serviciul Public Management Spitale și Cabinete', val:30396 },
+      { nume:'Spitalul Clinic Municipal "Filantropia"', val:9190 },
+      { nume:'Spitalul Clinic "Victor Babeș"', val:4719 },
+      { nume:'Primăria Craiova (proiecte FEN sănătate)', val:4859 },
+      { nume:'Spitalul Clinic de Neuropsihiatrie', val:3435 },
+      { nume:'DGAS (mediatori sanitari)', val:77 },
+    ]
+  },
+  { cod:'61.02', nume:'Ordine publică și siguranță națională',   total:30585, func:30294, dezv:291,     color:'#b5a424',
+    detalii:[
+      { nume:'Poliția Locală Craiova', val:30357 },
+      { nume:'Protecție civilă', val:228 },
+    ]
+  },
+  { cod:'55.02', nume:'Datorie publică și împrumuturi',          total:9485, func:9485, dezv:0,          color:'#8c6d3f',
+    detalii:[
+      { nume:'Dobânzi datorie publică externă', val:7744 },
+      { nume:'Dobânzi datorie publică internă', val:1552 },
+      { nume:'Dobânzi credite garantate', val:188 },
+      { nume:'Comisioane și alte costuri', val:1 },
+    ]
+  },
+  { cod:'80.02', nume:'Acțiuni generale economice',              total:6216, func:3530, dezv:2686,       color:'#6a6a8a',
+    detalii:[
+      { nume:'Rambursări credite externe', val:3530 },
+      { nume:'Proiecte FEN digitalizare PMC', val:2686 },
+    ]
+  },
+  { cod:'54.02', nume:'Alte servicii publice generale',          total:4709, func:4709, dezv:0,          color:'#a0a0a0',
+    detalii:[
+      { nume:'Direcția de Evidență a Persoanelor', val:4699 },
+      { nume:'Fond de rezervă bugetară', val:10 },
+    ]
+  },
+];
+
+const TIPURI = [
+  { nume:'Bunuri și servicii',    val:401448, color:'#2c7bb6' },
+  { nume:'FEN postaderare',       val:197512, color:'#7b4fa0' },
+  { nume:'PNRR (component 60)',   val:164231, color:'#9c59b6' },
+  { nume:'Cheltuieli de capital', val:193779, color:'#4a9e5c' },
+  { nume:'Asistență socială',     val:94780,  color:'#cf446a' },
+  { nume:'Transferuri curente',   val:91590,  color:'#d95f02' },
+  { nume:'Cheltuieli de personal',val:146637, color:'#e83e3e' },
+  { nume:'Subvenții',             val:46500,  color:'#e07b39' },
+  { nume:'PNRR (component 61)',   val:47983,  color:'#b5a424' },
+  { nume:'Alte transferuri',      val:32314,  color:'#6a6a8a' },
+  { nume:'Rambursări credite',    val:25661,  color:'#8c6d3f' },
+  { nume:'FEN 2014-2020',         val:9772,   color:'#1a9e9e' },
+  { nume:'Dobânzi',               val:9484,   color:'#a0a0a0' },
+  { nume:'Transferuri de capital', val:7559,  color:'#3c8e5e' },
+];
+
+const SURSE = [
+  { nume:'Cote defalcate impozit venit (63%)', val:486869, color:'#2c7bb6' },
+  { nume:'Venituri proprii (impozite și taxe)', val:380783, color:'#4a9e5c' },
+  { nume:'Sume primite de la UE (plăți efectuate)', val:165327, color:'#7b4fa0' },
+  { nume:'PNRR asistență financiară nerambursabilă', val:154116, color:'#9c59b6' },
+  { nume:'Sume defalcate din TVA', val:176283, color:'#1a9e9e' },
+  { nume:'PNRR fonduri din împrumut', val:47018, color:'#b5a424' },
+  { nume:'Subvenții de la bugetul de stat', val:28332, color:'#d95f02' },
+  { nume:'FEN postaderare (subvenții)', val:9466, color:'#3c8e5e' },
+  { nume:'Alte venituri (certificate CO₂, risc seismic)', val:2679, color:'#a0a0a0' },
+  { nume:'Donații și sponsorizări', val:173, color:'#e07b39' },
+];
+
+const INVESTITII = [
+  { cod:'74.02', nume:'Protecția mediului', val:52634, color:'#3c8e5e',
+    proiecte:[
+      { nume:'Închidere inel trafic zona sud – Casetare canal deschis (execuție)', val:50000 },
+      { nume:'Stații de reîncărcare acumulatori vehicule electrice (9 stații)', val:1679 },
+      { nume:'Studiu calitatea aerului și Plan integrat calitate aer', val:470 },
+      { nume:'Construire/extindere rețele pluviale aferente străzilor', val:10 },
+      { nume:'Reabilitare canal colector-stație epurare (P.T., D.E., execuție)', val:450 },
+    ]
+  },
+  { cod:'51.02', nume:'Autorități publice și acțiuni externe', val:33155, color:'#2c7bb6',
+    proiecte:[
+      { nume:'Majorare capital Termo Urban SRL', val:6000 },
+      { nume:'Achiziții imobile (terenuri, construcții)', val:15000 },
+      { nume:'Reabilitare și conservare clădire Minerva (ET, DALI)', val:2280 },
+      { nume:'Achiziție tehnică de calcul (servere, stații, storage, UPS)', val:615 },
+      { nume:'Rețea date-voce Direcția Evidență Persoanelor', val:261 },
+      { nume:'Sistem monitorizare video DEP', val:129 },
+      { nume:'Sistem control acces cu cartele magnetice DEP', val:68 },
+      { nume:'Alte achiziții (multifuncționale, licențe, monede)', val:338 },
+      { nume:'Reabilitare cladire Romain Rolland, Casa Carianopol (ET, DALI)', val:434 },
+      { nume:'Servicii documentații tehnico-economice (acord cadru)', val:28 },
+      { nume:'Alte cheltuieli de capital', val:7002 },
+    ]
+  },
+  { cod:'81.02', nume:'Combustibili și energie', val:37074, color:'#e07b39',
+    proiecte:[
+      { nume:'Instalație stocare energie electrică în baterii (fotovoltaic PMC)', val:35000 },
+      { nume:'Stație de încărcare mobilă pentru stocarea energiei', val:864 },
+      { nume:'Modernizare rețele termice de distribuție în municipiul Craiova (PT+ex)', val:1200 },
+      { nume:'Modernizare puncte termice în municipiul Craiova (ET, DALI)', val:10 },
+    ]
+  },
+  { cod:'65.02', nume:'Învățământ', val:23114, color:'#4a9e5c',
+    proiecte:[
+      { nume:'Măsuri performanță energetică 6 unități de învățământ', val:16400 },
+      { nume:'Construire creșă str. Potelu, cart. Romanescu (branșamente+electric)', val:1920 },
+      { nume:'Construire creșă str. Artileriei zona Blocurilor ANL (branșamente+electric)', val:1064 },
+      { nume:'Reabilitare și împrejmuire Grădinița Căsua Fermecată', val:1000 },
+      { nume:'Reabilitare și consolidare corp central CN Carol I și Opera', val:100 },
+      { nume:'Alte branșamente electrice/apă/sisteme antiefracție/centrale', val:2630 },
+    ]
+  },
+  { cod:'84.02', nume:'Transporturi', val:15912, color:'#d95f02',
+    proiecte:[
+      { nume:'Realizare construcție Pasaj str. Gârlești (execuție)', val:2500 },
+      { nume:'Modernizare str. Mălinului inclusiv canal adiacent (execuție)', val:6000 },
+      { nume:'Podețe canal (SF, PT, DE, verificare tehnică, execuție)', val:1606 },
+      { nume:'Pasaj denivelat intersecție Bd. Dacia–str. Amaradia–Aleea IV Șimnic (SF)', val:325 },
+      { nume:'Pasaj denivelat intersecție Bd. Decebal–str. Caracal–str. Henry Ford (SF)', val:325 },
+      { nume:'Reabilitare pasaj suprateran Km0 – Pasajul Nicolae Titulescu (DALI, PT, DE)', val:7 },
+      { nume:'Actualizare Studiu de Fezabilitate Pasarelă pietonală str. Henry Ford', val:132 },
+      { nume:'Alte achiziții și studii (acord cadru modernizare străzi)', val:5017 },
+    ]
+  },
+  { cod:'67.02', nume:'Cultură, recreere și religie', val:22900, color:'#7b4fa0',
+    proiecte:[
+      { nume:'Reabilitare instalație iluminat nocturn Complex Sportiv – Stadion de Fotbal', val:7572 },
+      { nume:'Construire seră tropicală – Grădina Botanică (execuție)', val:5000 },
+      { nume:'Amenajare Skate Park (execuție)', val:3100 },
+      { nume:'Modernizare construcție Grădina de vară Patria (execuție)', val:2000 },
+      { nume:'Relocare și restaurare Biserică din lemn "Pocruia" (execuție)', val:2 },
+      { nume:'Relocare și restaurare Biserică din lemn Pocruia (dirigentie de șantier)', val:9 },
+      { nume:'Achizitii echipamente atletism Complex Sportiv', val:160 },
+      { nume:'Alte achiziții echipamente (autoutilitare, tractoare, imprimantă 3D, pompe)', val:5057 },
+    ]
+  },
+  { cod:'70.02', nume:'Locuințe, servicii și dezv. publică', val:8724, color:'#1a9e9e',
+    proiecte:[
+      { nume:'Realizare PUG municipiul Craiova', val:1000 },
+      { nume:'Amenajare parcare supraetajată cart. Craiovița Nouă (SF)', val:100 },
+      { nume:'Sistem automatizat bariere recunoaștere automată numere înmatriculare', val:269 },
+      { nume:'Alimentare cu energie electrică – stații de încărcare rapidă autobuze (5 locații)', val:4677 },
+      { nume:'Achiziție NVR pentru Parcarea Subterană (4 buc.)', val:40 },
+      { nume:'Separare consum apă pe casa scării garsoniere str. Brestei nr. 257', val:265 },
+      { nume:'Alte investiții (automatizare plată parcare, mașini spălat, semaforizare)', val:2373 },
+    ]
+  },
+  { cod:'66.02', nume:'Sănătate', val:16, color:'#e83e3e',
+    proiecte:[
+      { nume:'Serviciul Public Management Spitale – aparatură multifuncțională', val:16 },
+    ]
+  },
+  { cod:'61.02', nume:'Ordine publică și siguranță națională', val:70, color:'#b5a424',
+    proiecte:[
+      { nume:'Lucrări de dezvoltare sistem înștiințare-alarmare – sirene electronice 1200W', val:70 },
+    ]
+  },
+  { cod:'68.02', nume:'Asigurări și asistență socială', val:180, color:'#cf446a',
+    proiecte:[
+      { nume:'Racordare energie electrică – centru de zi asistență și recuperare vârstnici Sf. Maria', val:180 },
+    ]
+  },
+];
+
+// ===================== UTILS =====================
+function fmt(val, decimals=1) {
+  if (Math.abs(val) >= 1000000) return (val/1000000).toFixed(decimals) + ' mld lei';
+  if (Math.abs(val) >= 1000) return (val/1000).toFixed(decimals) + ' mil. lei';
+  return val.toFixed(0) + ' mii lei';
+}
+
+function fmtBar(val) {
+  // afișează numărul brut în mii lei (unitatea e deja în titlul graficului)
+  if (val >= 1000) return (val/1000).toFixed(1) + ' mii';
+  return val.toLocaleString('ro-RO');
+}
+
+function fmtMii(val) {
+  return val.toLocaleString('ro-RO') + ' mii lei';
+}
+
+const maxTotal = Math.max(...CAPITOLE.map(c => c.total));
+
+// ===================== RENDER BAR CHART =====================
+function renderBars(containerId, data, maxVal, onClickFn) {
+  const el = document.getElementById(containerId);
+  el.innerHTML = '';
+
+  data.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.id = containerId + '-row-' + i;
+
+    const funcPct = (item.func / maxVal * 100).toFixed(1);
+    const devPct  = (item.dezv / maxVal * 100).toFixed(1);
+
+    row.innerHTML = `
+      <div class="bar-label" title="${item.nome || item.nume}">${item.nome || item.nume}</div>
+      <div class="bar-track">
+        <div class="bar-fill-func" style="width:${funcPct}%;background:${item.color}"></div>
+        <div class="bar-fill-dev"  style="width:${devPct}%;background:${item.color}"></div>
+      </div>
+      <div class="bar-val">${fmtBar(item.total)}</div>
+    `;
+
+    if (onClickFn) {
+      row.addEventListener('click', () => onClickFn(item, i, containerId));
+    }
+
+    el.appendChild(row);
+  });
+}
+
+// ===================== DRILL DOWN =====================
+let openDrill = null;
+
+function renderDrill(item, rowIndex, containerId) {
+  // close if same
+  const panelId = containerId + '-drill';
+  const existing = document.getElementById(panelId);
+  const rowEl = document.getElementById(containerId + '-row-' + rowIndex);
+
+  if (existing && openDrill === rowIndex + '-' + containerId) {
+    existing.remove();
+    if (rowEl) rowEl.classList.remove('selected');
+    openDrill = null;
+    return;
+  }
+
+  if (existing) existing.remove();
+  document.querySelectorAll('.bar-row.selected').forEach(el => el.classList.remove('selected'));
+
+  openDrill = rowIndex + '-' + containerId;
+  if (rowEl) rowEl.classList.add('selected');
+
+  const maxDetaliu = Math.max(...item.detalii.map(d => Math.abs(d.val)));
+
+  let rows = item.detalii
+    .filter(d => d.val > 0)
+    .sort((a,b) => b.val - a.val)
+    .map(d => `
+      <div class="drill-row">
+        <div class="drill-name">${d.nume}</div>
+        <div class="drill-bar-wrap">
+          <div class="drill-bar-fill" style="width:${(d.val/maxDetaliu*100).toFixed(1)}%;background:${item.color}"></div>
+        </div>
+        <div class="drill-amount">${fmtMii(d.val)}</div>
+      </div>
+    `).join('');
+
+  const pct = ((item.total / CAPITOLE.reduce((s,c)=>s+c.total,0))*100).toFixed(1);
+
+  const panel = document.createElement('div');
+  panel.className = 'drill-panel';
+  panel.id = panelId;
+  panel.innerHTML = `
+    <button class="close-btn" onclick="closeDrill('${containerId}', ${rowIndex})">✕</button>
+    <div class="drill-title">${item.nome || item.nume}</div>
+    <div class="drill-meta">Total: <strong>${fmtMii(item.total)}</strong> · ${pct}% din buget · Funcționare: ${fmtMii(item.func)} · Dezvoltare: ${fmtMii(item.dezv)}</div>
+    ${rows}
+  `;
+
+  rowEl.parentNode.insertBefore(panel, rowEl.nextSibling);
+}
+
+function closeDrill(containerId, rowIndex) {
+  const existing = document.getElementById(containerId + '-drill');
+  if (existing) existing.remove();
+  const rowEl = document.getElementById(containerId + '-row-' + rowIndex);
+  if (rowEl) rowEl.classList.remove('selected');
+  openDrill = null;
+}
+
+// ===================== INVESTITII DRILL DOWN =====================
+function renderInvBars() {
+  const el = document.getElementById('inv-bars');
+  el.innerHTML = '';
+
+  const maxInv = Math.max(...INVESTITII.map(i => i.val));
+
+  INVESTITII.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'inv-chapter-row bar-row';
+    row.id = 'inv-row-' + i;
+
+    const pct = (item.val / maxInv * 100).toFixed(1);
+
+    row.innerHTML = `
+      <div class="bar-label" title="${item.nume}">${item.nume}</div>
+      <div class="bar-track">
+        <div class="bar-fill-func" style="width:${pct}%;background:${item.color}"></div>
+      </div>
+      <div class="bar-val">${fmtBar(item.val)}</div>
+    `;
+
+    row.addEventListener('click', () => renderInvDrill(item, i));
+    el.appendChild(row);
+  });
+}
+
+function renderInvDrill(item, idx) {
+  const panelId = 'inv-drill';
+  const existing = document.getElementById(panelId);
+  const rowEl = document.getElementById('inv-row-' + idx);
+
+  if (existing && openDrill === 'inv-' + idx) {
+    existing.remove();
+    if (rowEl) rowEl.classList.remove('selected');
+    openDrill = null;
+    return;
+  }
+
+  if (existing) existing.remove();
+  document.querySelectorAll('.inv-chapter-row.selected').forEach(el => el.classList.remove('selected'));
+
+  openDrill = 'inv-' + idx;
+  if (rowEl) rowEl.classList.add('selected');
+
+  const maxP = Math.max(...item.proiecte.map(p => Math.abs(p.val)));
+
+  let rows = item.proiecte.sort((a,b)=>b.val-a.val).map(p => `
+    <div class="drill-row">
+      <div class="drill-name">${p.nume}</div>
+      <div class="drill-bar-wrap">
+        <div class="drill-bar-fill" style="width:${(Math.abs(p.val)/maxP*100).toFixed(1)}%;background:${item.color}"></div>
+      </div>
+      <div class="drill-amount">${fmtMii(p.val)}</div>
+    </div>
+  `).join('');
+
+  const panel = document.createElement('div');
+  panel.className = 'drill-panel';
+  panel.id = panelId;
+  panel.innerHTML = `
+    <button class="close-btn" onclick="closeInvDrill(${idx})">✕</button>
+    <div class="drill-title">${item.nume}</div>
+    <div class="drill-meta">Investiții proprii: <strong>${fmtMii(item.val)}</strong></div>
+    ${rows}
+  `;
+
+  rowEl.parentNode.insertBefore(panel, rowEl.nextSibling);
+}
+
+function closeInvDrill(idx) {
+  const existing = document.getElementById('inv-drill');
+  if (existing) existing.remove();
+  const rowEl = document.getElementById('inv-row-' + idx);
+  if (rowEl) rowEl.classList.remove('selected');
+  openDrill = null;
+}
+
+// ===================== DONUT =====================
+function makeDonut(canvasId, labels, vals, colors, legendId) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: vals, backgroundColor: colors, borderWidth: 2, borderColor: '#fff', hoverOffset: 4 }]
+    },
+    options: {
+      cutout: '60%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ' ' + fmt(ctx.raw) + ' (' + (ctx.raw / ctx.dataset.data.reduce((a,b)=>a+b,0) * 100).toFixed(1) + '%)'
+          }
+        }
+      }
+    }
+  });
+
+  if (legendId) {
+    const total = vals.reduce((a,b)=>a+b,0);
+    const el = document.getElementById(legendId);
+    el.innerHTML = labels.map((l,i) => `
+      <div class="legend-item">
+        <div class="legend-dot" style="background:${colors[i]}"></div>
+        <div class="legend-name">${l}</div>
+        <div class="legend-pct">${(vals[i]/total*100).toFixed(0)}%</div>
+      </div>
+    `).join('');
+  }
+}
+
+// ===================== TIPURI BARS =====================
+function renderTipuriBars() {
+  const sorted = [...TIPURI].sort((a,b) => b.val - a.val);
+  const maxV = sorted[0].val;
+
+  const el = document.getElementById('tipuri-bars');
+  el.innerHTML = sorted.map(t => `
+    <div class="type-row">
+      <div class="type-label">${t.nume}</div>
+      <div class="type-bar-wrap">
+        <div class="type-bar-fill" style="width:${(t.val/maxV*100).toFixed(1)}%;background:${t.color}"></div>
+      </div>
+      <div class="type-val">${fmtBar(t.val)}</div>
+    </div>
+  `).join('');
+}
+
+// ===================== SURSE BARS =====================
+function renderSurseBars() {
+  const sorted = [...SURSE].sort((a,b) => b.val - a.val);
+  const maxV = sorted[0].val;
+  const total = sorted.reduce((s,i) => s + i.val, 0);
+
+  const el = document.getElementById('surse-bars');
+  el.innerHTML = sorted.map(s => `
+    <div class="type-row">
+      <div class="type-label">${s.nume}</div>
+      <div class="type-bar-wrap">
+        <div class="type-bar-fill" style="width:${(s.val/maxV*100).toFixed(1)}%;background:${s.color}"></div>
+      </div>
+      <div class="type-val">${fmtBar(s.val)} <span style="color:#aaa;font-size:10px">(${(s.val/total*100).toFixed(0)}%)</span></div>
+    </div>
+  `).join('');
+}
+
+// ===================== INIT =====================
+function init() {
+  // Prezentare bars
+  renderBars('prezentare-bars', CAPITOLE, maxTotal, renderDrill);
+
+  // Functii bars
+  renderBars('functii-bars', CAPITOLE, maxTotal, renderDrill);
+
+  // Donut funcții
+  const topFunctii = CAPITOLE.slice(0, 8);
+  const restFunctii = CAPITOLE.slice(8);
+  const restVal = restFunctii.reduce((s,c) => s+c.total, 0);
+  makeDonut('donut-functii',
+    [...topFunctii.map(c => c.nume.split(',')[0].split(' și')[0]), 'Altele'],
+    [...topFunctii.map(c => c.total), restVal],
+    [...topFunctii.map(c => c.color), '#a0a0a0'],
+    'legend-functii'
+  );
+
+  // Donut surse (prezentare - simplified)
+  makeDonut('donut-surse',
+    ['Venituri proprii', 'Cote+TVA (buget central)', 'PNRR+FEN+UE', 'Subvenții stat'],
+    [380956, 663152, 375927, 28332],
+    ['#4a9e5c', '#2c7bb6', '#7b4fa0', '#d95f02'],
+    'legend-surse'
+  );
+
+  // Tipuri
+  renderTipuriBars();
+  const tipTop6 = [...TIPURI].sort((a,b)=>b.val-a.val).slice(0,6);
+  const tipRest = [...TIPURI].sort((a,b)=>b.val-a.val).slice(6);
+  makeDonut('donut-tipuri',
+    [...tipTop6.map(t=>t.nume), 'Altele'],
+    [...tipTop6.map(t=>t.val), tipRest.reduce((s,t)=>s+t.val,0)],
+    [...tipTop6.map(t=>t.color), '#a0a0a0'],
+    'legend-tipuri'
+  );
+
+  // Investitii
+  renderInvBars();
+
+  // Surse detaliu
+  makeDonut('donut-surse-detail',
+    SURSE.map(s=>s.nume.split('(')[0].trim()),
+    SURSE.map(s=>s.val),
+    SURSE.map(s=>s.color),
+    'legend-surse-detail'
+  );
+  renderSurseBars();
+}
+
+// ===================== TABS =====================
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  openDrill = null;
+}
+
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
