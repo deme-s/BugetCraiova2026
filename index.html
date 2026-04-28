@@ -533,7 +533,7 @@
 <!-- ======= PE FUNCȚII ======= -->
 <section id="functii" class="section">
   <div class="card">
-    <div class="card-title">Cheltuieli pe clasificare funcțională — click pentru detalii</div>
+    <div class="card-title">Cheltuieli pe clasificare funcțională — mii lei · click pentru detalii</div>
     <div class="legend-bar">
       <div class="legend-bar-item"><div class="legend-bar-dot" style="background:#888"></div> Funcționare</div>
       <div class="legend-bar-item"><div class="legend-bar-dot" style="background:#bbb;opacity:.6"></div> Dezvoltare</div>
@@ -549,10 +549,11 @@
       <div class="card-title">Structura cheltuielilor</div>
       <div class="donut-wrap" style="flex-direction:column; align-items:flex-start; gap:16px;">
         <div style="width:200px;height:200px;margin:0 auto;"><canvas id="donut-tipuri"></canvas></div>
+      <div id="legend-tipuri" style="margin-top:12px;"></div>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">Detalii pe tipuri economice</div>
+      <div class="card-title">Detalii pe tipuri economice — mii lei</div>
       <div id="tipuri-bars"></div>
     </div>
   </div>
@@ -578,7 +579,7 @@
     </div>
   </div>
   <div class="card">
-    <div class="card-title">Investiții proprii pe capitole — click pentru proiecte</div>
+    <div class="card-title">Investiții proprii pe capitole — mii lei · click pentru proiecte</div>
     <div id="inv-bars"></div>
   </div>
 </section>
@@ -588,32 +589,33 @@
   <div class="surse-grid">
     <div class="sursa-card">
       <div class="sursa-label">Venituri proprii (impozite+taxe)</div>
-      <div class="sursa-val" style="color:#2c7bb6">380,9 mil lei</div>
+      <div class="sursa-val" style="color:#2c7bb6">380,9 mil. lei</div>
       <div class="sursa-pct">26,3% din venituri totale</div>
     </div>
     <div class="sursa-card">
       <div class="sursa-label">Transferuri buget central (cote IMP+TVA)</div>
-      <div class="sursa-val" style="color:#4a9e5c">663,2 mil lei</div>
+      <div class="sursa-val" style="color:#4a9e5c">663,2 mil. lei</div>
       <div class="sursa-pct">45,7% din venituri totale</div>
     </div>
     <div class="sursa-card">
       <div class="sursa-label">Fonduri europene (PNRR+FEN+UE)</div>
-      <div class="sursa-val" style="color:#7b4fa0">375,9 mil lei</div>
+      <div class="sursa-val" style="color:#7b4fa0">375,9 mil. lei</div>
       <div class="sursa-pct">25,9% din venituri totale</div>
     </div>
     <div class="sursa-card">
       <div class="sursa-label">Subvenții de la bugetul de stat</div>
-      <div class="sursa-val" style="color:#d95f02">28,3 mil lei</div>
+      <div class="sursa-val" style="color:#d95f02">28,3 mil. lei</div>
       <div class="sursa-pct">2,0% din venituri totale</div>
     </div>
   </div>
   <div class="two-col">
     <div class="card">
       <div class="card-title">Structura veniturilor</div>
-      <div style="max-width:280px;margin:0 auto;"><canvas id="donut-surse-detail"></canvas></div>
+      <div style="max-width:240px;margin:0 auto 16px;"><canvas id="donut-surse-detail"></canvas></div>
+      <div id="legend-surse-detail" style="font-size:11px;"></div>
     </div>
     <div class="card">
-      <div class="card-title">Detaliu surse finanțare</div>
+      <div class="card-title">Detaliu surse finanțare — mii lei</div>
       <div id="surse-bars"></div>
     </div>
   </div>
@@ -854,9 +856,15 @@ const INVESTITII = [
 
 // ===================== UTILS =====================
 function fmt(val, decimals=1) {
-  if (Math.abs(val) >= 1000000) return (val/1000000).toFixed(decimals) + ' mld';
-  if (Math.abs(val) >= 1000) return (val/1000).toFixed(decimals) + ' mil';
-  return val.toFixed(0) + ' mii';
+  if (Math.abs(val) >= 1000000) return (val/1000000).toFixed(decimals) + ' mld lei';
+  if (Math.abs(val) >= 1000) return (val/1000).toFixed(decimals) + ' mil. lei';
+  return val.toFixed(0) + ' mii lei';
+}
+
+function fmtBar(val) {
+  // afișează numărul brut în mii lei (unitatea e deja în titlul graficului)
+  if (val >= 1000) return (val/1000).toFixed(1) + ' mii';
+  return val.toLocaleString('ro-RO');
 }
 
 function fmtMii(val) {
@@ -884,7 +892,7 @@ function renderBars(containerId, data, maxVal, onClickFn) {
         <div class="bar-fill-func" style="width:${funcPct}%;background:${item.color}"></div>
         <div class="bar-fill-dev"  style="width:${devPct}%;background:${item.color}"></div>
       </div>
-      <div class="bar-val">${fmt(item.total)}</div>
+      <div class="bar-val">${fmtBar(item.total)}</div>
     `;
 
     if (onClickFn) {
@@ -974,7 +982,7 @@ function renderInvBars() {
       <div class="bar-track">
         <div class="bar-fill-func" style="width:${pct}%;background:${item.color}"></div>
       </div>
-      <div class="bar-val">${fmt(item.val)}</div>
+      <div class="bar-val">${fmtBar(item.val)}</div>
     `;
 
     row.addEventListener('click', () => renderInvDrill(item, i));
@@ -1080,7 +1088,7 @@ function renderTipuriBars() {
       <div class="type-bar-wrap">
         <div class="type-bar-fill" style="width:${(t.val/maxV*100).toFixed(1)}%;background:${t.color}"></div>
       </div>
-      <div class="type-val">${fmt(t.val)}</div>
+      <div class="type-val">${fmtBar(t.val)}</div>
     </div>
   `).join('');
 }
@@ -1098,7 +1106,7 @@ function renderSurseBars() {
       <div class="type-bar-wrap">
         <div class="type-bar-fill" style="width:${(s.val/maxV*100).toFixed(1)}%;background:${s.color}"></div>
       </div>
-      <div class="type-val">${fmt(s.val)} <span style="color:#aaa;font-size:10px">(${(s.val/total*100).toFixed(0)}%)</span></div>
+      <div class="type-val">${fmtBar(s.val)} <span style="color:#aaa;font-size:10px">(${(s.val/total*100).toFixed(0)}%)</span></div>
     </div>
   `).join('');
 }
@@ -1138,7 +1146,7 @@ function init() {
     [...tipTop6.map(t=>t.nume), 'Altele'],
     [...tipTop6.map(t=>t.val), tipRest.reduce((s,t)=>s+t.val,0)],
     [...tipTop6.map(t=>t.color), '#a0a0a0'],
-    null
+    'legend-tipuri'
   );
 
   // Investitii
@@ -1149,7 +1157,7 @@ function init() {
     SURSE.map(s=>s.nume.split('(')[0].trim()),
     SURSE.map(s=>s.val),
     SURSE.map(s=>s.color),
-    null
+    'legend-surse-detail'
   );
   renderSurseBars();
 }
